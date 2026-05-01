@@ -29,7 +29,20 @@ app.use(express.urlencoded({ extended: true }));
 // ---------------------------------------------------------------------------
 app.use(
   cors({
-    origin: config.FRONTEND_URL,
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      
+      // Allow exact match, localhost, or any vercel preview deployment
+      if (
+        origin === config.FRONTEND_URL || 
+        origin.startsWith("http://localhost:") || 
+        origin.endsWith(".vercel.app")
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
